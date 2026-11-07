@@ -16,26 +16,31 @@ header h1{margin:0;font-size:1.9rem;font-weight:800;text-shadow:0 3px 0 rgba(0,0
 header p{margin:2px 0 0;font-size:1.05rem;text-shadow:0 2px 0 rgba(0,0,0,.15)}
 .sun{position:absolute;top:10px;right:18px;font-size:2.4rem}.deco{position:absolute;left:16px;top:12px;font-size:1.9rem}
 .wave{position:absolute;left:0;bottom:-1px;width:100%;height:34px}.wave path{fill:var(--bg)}
-.search{display:flex;gap:10px;padding:0 20px;margin-top:-6px}
-input[type=search]{flex:1;min-width:0;padding:14px 20px;font:inherit;font-size:1.05rem;border:3px solid var(--coral);border-radius:999px;background:var(--card);color:var(--tx);box-shadow:var(--shadow);outline:none}
+.search{display:flex;gap:10px;align-items:center;padding:4px 20px 0}
+input[type=search]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:52px;padding:0 20px;font:inherit;font-size:1.05rem;line-height:52px;border:3px solid var(--coral);border-radius:999px;background:var(--card);color:var(--tx);box-shadow:var(--shadow);outline:none}
+input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none;display:none}
 button{font:inherit;cursor:pointer}
-.go{padding:12px 20px;border:0;border-radius:999px;background:var(--coral);color:#fff;font-weight:800;box-shadow:0 4px 0 rgba(0,0,0,.18)}
-.chips{display:flex;flex-wrap:wrap;gap:10px;padding:14px 20px 6px}
+.go{height:52px;padding:0 22px;border:0;border-radius:999px;background:var(--coral);color:#fff;font-weight:800;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.chips,.tabs{display:flex;flex-wrap:wrap;gap:10px;padding:14px 20px 4px}
 .chip{--c:#ff6b5b;padding:9px 16px;border-radius:999px;border:3px solid var(--c);background:var(--card);color:var(--tx);font-weight:700}
 .chip[aria-pressed=true]{background:var(--c);color:#fff}
 .layout{display:grid;gap:14px;padding:8px 20px 24px}
 #map{height:42vh;min-height:280px;border:3px solid var(--coral);border-radius:22px;box-shadow:var(--shadow);z-index:0}
-.zone{position:absolute}
 .pin{font-size:1.7rem;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
-.status{padding:4px 22px;color:var(--mu);font-weight:700}
+.status{padding:4px 2px 8px;color:var(--mu);font-weight:700}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;align-content:start}
 .card{--c:#ff6b5b;background:var(--card);border:3px solid var(--c);border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:7px;box-shadow:var(--shadow)}
 .card h2{margin:0;font-size:1.15rem;font-weight:800}
 .meta{color:var(--mu);font-size:.92rem;word-break:break-word}
 .tags{display:flex;flex-wrap:wrap;gap:6px}.tag{background:var(--c);color:#fff;border-radius:999px;padding:3px 10px;font-size:.82rem;font-weight:700}
+.photos{display:flex;gap:6px;flex-wrap:wrap}.photos img{width:84px;height:84px;object-fit:cover;border-radius:12px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
 .btn{padding:9px 14px;border-radius:999px;background:var(--coral);color:#fff;text-decoration:none;font-weight:800;border:0;font-size:.95rem}
-.btn.alt{background:#2bb3ea}
+.btn.alt{background:#2bb3ea}.btn.fav{background:#f5a300}.btn.del{background:#6b6a85}
+details{background:var(--card);border:3px solid #14b8a6;border-radius:22px;padding:10px 14px;margin-bottom:12px}
+summary{font-weight:800;cursor:pointer}
+form.fiche{display:grid;gap:8px;margin-top:10px}
+form.fiche input,form.fiche select,form.fiche textarea{font:inherit;padding:10px 12px;border:2px solid var(--coral);border-radius:12px;background:var(--bg);color:var(--tx);width:100%}
 footer{padding:0 22px 28px;color:var(--mu);font-size:.85rem}
 @media (min-width:900px){.layout{grid-template-columns:1fr 1fr;align-items:start}#map{position:sticky;top:12px;height:calc(100vh - 24px)}}
 </style>
@@ -49,30 +54,62 @@ footer{padding:0 22px 28px;color:var(--mu);font-size:.85rem}
 </header>
 <form class="search" id="sf"><input type="search" id="q" placeholder="🔎 Une ville ou une région…"><button class="go" type="submit">Go !</button></form>
 <div class="chips" id="chips"></div>
+<div class="tabs" id="tabs"></div>
 <div class="layout">
 <div id="map"></div>
 <div>
-<div class="status" id="status">Cherche une ville, puis appuie sur « Chercher dans cette zone ».</div>
-<div style="padding:0 0 12px"><button class="go" id="zone" type="button">🔄 Chercher dans cette zone</button></div>
+<div class="status" id="status"></div>
+<div id="zonebox" style="padding-bottom:12px"><button class="go" id="zone" type="button">🔄 Chercher dans cette zone</button></div>
+<details id="formbox" style="display:none"><summary>➕ Ajouter une fiche</summary>
+<form class="fiche" id="ff">
+<small>La fiche sera placée au centre de la carte : déplace la carte avant d’enregistrer.</small>
+<input name="nom" placeholder="Nom du camping *" required>
+<input name="adr" placeholder="Ville ou adresse">
+<input name="prix" type="number" min="0" step="0.5" placeholder="Prix par nuit (€)">
+<select name="note"><option value="0">Note : aucune</option><option value="1">⭐</option><option value="2">⭐⭐</option><option value="3">⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="5">⭐⭐⭐⭐⭐</option></select>
+<input name="web" type="url" placeholder="Site web (https://…)">
+<textarea name="com" rows="3" placeholder="Mes remarques"></textarea>
+<input name="photos" type="file" accept="image/*" multiple>
+<button class="go" type="submit">💾 Enregistrer la fiche</button>
+</form></details>
 <div class="grid" id="grid"></div>
 </div>
 </div>
-<footer>Données © contributeurs OpenStreetMap. Les informations (électricité, vidange, wifi…) dépendent de ce que les contributeurs ont renseigné.</footer>
+<footer>Données © contributeurs OpenStreetMap. Les informations (électricité, vidange, wifi…) dépendent de ce que les contributeurs ont renseigné. Favoris et fiches sont enregistrés sur cet appareil.</footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-var LAB={caravane:"🚙 Caravane","camping-car":"🚐 Camping-car",electricite:"⚡ Électricité",vidange:"💧 Vidange",wifi:"📶 Wifi",animaux:"🐶 Animaux admis",annee:"☀️ Ouvert toute l’année"};
-var COL={caravane:"#2bb3ea","camping-car":"#8a5cf6",electricite:"#f5a300",vidange:"#14b8a6",wifi:"#ec4899",animaux:"#f97316",annee:"#ef4444"};
+var LAB={caravane:"🚙 Caravane","camping-car":"🚐 Aire de camping-car",electricite:"⚡ Électricité",vidange:"💧 Vidange",wifi:"📶 Wifi",ferme:"🚜 Camping à la ferme",annee:"☀️ Ouvert toute l’année"};
+var COL={caravane:"#2bb3ea","camping-car":"#8a5cf6",electricite:"#f5a300",vidange:"#14b8a6",wifi:"#ec4899",ferme:"#65a30d",annee:"#ef4444"};
 var CARD=["#ff6b5b","#2bb3ea","#f5a300","#14b8a6","#8a5cf6","#ec4899"];
-var on={},items=[],markers=L.layerGroup();
+var MO={Jan:"janv.",Feb:"févr.",Mar:"mars",Apr:"avr.",May:"mai",Jun:"juin",Jul:"juil.",Aug:"août",Sep:"sept.",Oct:"oct.",Nov:"nov.",Dec:"déc."};
+var DY={Mo:"lun",Tu:"mar",We:"mer",Th:"jeu",Fr:"ven",Sa:"sam",Su:"dim"};
+var WD={PH:"jours fériés",SH:"vacances scolaires",off:"fermé",open:"ouvert",sunrise:"lever du soleil",sunset:"coucher du soleil"};
+function fr(s){if(!s)return s;if(s==="24/7")return "24h/24, 7j/7";
+ return s.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/g,function(m){return MO[m];}).replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su)\b/g,function(m){return DY[m];}).replace(/\b(PH|SH|off|open|sunrise|sunset)\b/g,function(m){return WD[m];}).replace(/;/g," ;");}
+var chips=document.getElementById("chips"),grid=document.getElementById("grid"),st=document.getElementById("status"),tabsEl=document.getElementById("tabs");
+function ld(k,d){try{return JSON.parse(localStorage.getItem(k))||d;}catch(e){return d;}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){st.textContent="⚠️ Enregistrement impossible (stockage plein ?).";return false;}}
+var favs=ld("fav",{}),mine=ld("mine",[]),items=[],on={},tab="zone",markers=L.layerGroup();
 var map=L.map("map").setView([46.6,2.4],6);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:"© OpenStreetMap"}).addTo(map);
 markers.addTo(map);
-var chips=document.getElementById("chips"),grid=document.getElementById("grid"),st=document.getElementById("status");
 Object.keys(LAB).forEach(function(k){
  var b=document.createElement("button");b.className="chip";b.textContent=LAB[k];b.style.setProperty("--c",COL[k]);b.setAttribute("aria-pressed","false");
- b.onclick=function(){on[k]=!on[k];b.setAttribute("aria-pressed",on[k]?"true":"false");render();};
+ b.onclick=function(){on[k]=!on[k];b.setAttribute("aria-pressed",on[k]?"true":"false");render(false);};
  chips.appendChild(b);
 });
+var TABS={zone:"🗺️ Résultats",fav:"⭐ Mes favoris",mine:"📝 Mes fiches"};
+Object.keys(TABS).forEach(function(k){
+ var b=document.createElement("button");b.className="chip";b.textContent=TABS[k];b.style.setProperty("--c","#8a5cf6");b.dataset.tab=k;
+ b.onclick=function(){setTab(k);};tabsEl.appendChild(b);
+});
+function setTab(k){
+ tab=k;Array.prototype.forEach.call(tabsEl.children,function(b){b.setAttribute("aria-pressed",b.dataset.tab===k?"true":"false");});
+ document.getElementById("zonebox").style.display=k==="zone"?"block":"none";
+ document.getElementById("formbox").style.display=k==="mine"?"block":"none";
+ chips.style.display=k==="mine"?"none":"flex";
+ render(true);
+}
 function feats(t){
  var f=[];
  if(t.caravans==="yes"||(t.tourism==="camp_site"&&t.caravans!=="no"))f.push("caravane");
@@ -80,32 +117,48 @@ function feats(t){
  if(t.power_supply==="yes")f.push("electricite");
  if(t.sanitary_dump_station==="yes")f.push("vidange");
  if(t.internet_access==="wlan"||t.internet_access==="yes")f.push("wifi");
- if(t.dog==="yes")f.push("animaux");
+ if(t.camp_site==="farm"||t.farm==="yes"||/ferme/i.test((t.name||"")+" "+(t.operator||"")))f.push("ferme");
  if(t.seasonal==="no"||t.opening_hours==="24/7")f.push("annee");
  return f;
 }
-function render(){
+function pass(c){for(var k in on){if(on[k]&&c.t.indexOf(k)<0)return false;}return true;}
+function okUrl(u){return u&&/^https?:\/\//.test(u);}
+function render(fit){
  markers.clearLayers();grid.innerHTML="";
- var res=items.filter(function(c){for(var k in on){if(on[k]&&c.t.indexOf(k)<0)return false;}return true;});
- if(items.length)st.textContent="🎒 "+res.length+" sur "+items.length+" campings dans cette zone";
+ var all=tab==="fav"?Object.keys(favs).map(function(k){return favs[k];}):tab==="mine"?mine:items;
+ var res=tab==="mine"?all:all.filter(pass);
+ if(tab==="zone")st.textContent=items.length?"🎒 "+res.length+" sur "+items.length+" campings dans cette zone":"Cherche une ville, puis appuie sur « Chercher dans cette zone ».";
+ else if(tab==="fav")st.textContent=res.length?"⭐ "+res.length+" favori(s)":"Aucun favori pour le moment. Appuie sur « ☆ Favori » sur une fiche.";
+ else st.textContent=res.length?"📝 "+res.length+" fiche(s) personnelle(s)":"Aucune fiche. Ouvre « Ajouter une fiche » pour créer la tienne.";
  res.forEach(function(c,i){
-  var m=L.marker([c.lat,c.lng],{icon:L.divIcon({html:"📍",className:"pin",iconSize:[28,28],iconAnchor:[14,26]})});
-  m.bindPopup(document.createTextNode(c.n).textContent);markers.addLayer(m);
-  var d=document.createElement("div");d.className="card";d.style.setProperty("--c",CARD[i%CARD.length]);
-  var h=document.createElement("h2");h.textContent=c.n;d.appendChild(h);
-  if(c.addr){var a=document.createElement("div");a.className="meta";a.textContent="📌 "+c.addr;d.appendChild(a);}
-  if(c.oh){var o=document.createElement("div");o.className="meta";o.textContent="🕒 "+c.oh;d.appendChild(o);}
-  var tg=document.createElement("div");tg.className="tags";
-  c.t.forEach(function(k){var e=document.createElement("span");e.className="tag";e.textContent=LAB[k];tg.appendChild(e);});
-  d.appendChild(tg);
-  var r=document.createElement("div");r.className="row";
-  var g=document.createElement("a");g.className="btn";g.target="_blank";g.rel="noopener";g.textContent="📍 Google Maps";
-  g.href="https://www.google.com/maps/search/?api=1&query="+c.lat+","+c.lng;r.appendChild(g);
-  var s=document.createElement("button");s.className="btn alt";s.textContent="🗺️ Voir sur la carte";
-  s.onclick=function(){map.setView([c.lat,c.lng],15);m.openPopup();window.scrollTo({top:0,behavior:"smooth"});};r.appendChild(s);
-  if(c.web&&/^https?:\/\//.test(c.web)){var w=document.createElement("a");w.className="btn alt";w.target="_blank";w.rel="noopener";w.textContent="🌐 Site";w.href=c.web;r.appendChild(w);}
-  d.appendChild(r);grid.appendChild(d);
+  var m=L.marker([c.lat,c.lng],{icon:L.divIcon({html:tab==="mine"?"📝":favs[c.id]?"⭐":"📍",className:"pin",iconSize:[28,28],iconAnchor:[14,26]})});
+  m.bindTooltip(c.n,{direction:"top",offset:[0,-22]});
+  var pp=document.createElement("div");pp.textContent=c.n+(okUrl(c.web)?" (double-clic : site web)":"");m.bindPopup(pp);
+  m.on("dblclick",function(){if(okUrl(c.web))window.open(c.web,"_blank","noopener");else st.textContent="ℹ️ Pas de site web renseigné pour « "+c.n+" ».";});
+  markers.addLayer(m);
+  grid.appendChild(card(c,i,m));
  });
+ if(fit&&res.length&&tab!=="zone")map.fitBounds(L.latLngBounds(res.map(function(c){return [c.lat,c.lng];})).pad(.3),{maxZoom:13});
+}
+function card(c,i,m){
+ var d=document.createElement("div");d.className="card";d.style.setProperty("--c",CARD[i%CARD.length]);
+ function add(cls,txt){var e=document.createElement("div");e.className=cls;e.textContent=txt;d.appendChild(e);}
+ var h=document.createElement("h2");h.textContent=c.n;d.appendChild(h);
+ if(c.addr)add("meta","📌 "+c.addr);
+ if(c.price)add("meta","💶 "+c.price+" €/nuit");
+ if(c.note)add("meta","Ma note : "+"⭐".repeat(c.note));
+ if(c.oh)add("meta","🕒 "+fr(c.oh));
+ if(c.com)add("meta","💬 "+c.com);
+ if(c.photos&&c.photos.length){var p=document.createElement("div");p.className="photos";c.photos.forEach(function(u){var im=document.createElement("img");im.src=u;im.alt="Photo de "+c.n;p.appendChild(im);});d.appendChild(p);}
+ if(c.t.length){var tg=document.createElement("div");tg.className="tags";c.t.forEach(function(k){var e=document.createElement("span");e.className="tag";e.textContent=LAB[k];tg.appendChild(e);});d.appendChild(tg);}
+ var r=document.createElement("div");r.className="row";
+ function btn(cls,txt,fn){var b=document.createElement("button");b.className="btn "+cls;b.textContent=txt;b.onclick=fn;r.appendChild(b);}
+ btn("alt","🗺️ Carte",function(){map.setView([c.lat,c.lng],15);m.openPopup();window.scrollTo({top:0,behavior:"smooth"});});
+ if(tab!=="mine")btn("fav",favs[c.id]?"⭐ Favori":"☆ Favori",function(){if(favs[c.id])delete favs[c.id];else favs[c.id]=c;sv("fav",favs);render(false);});
+ else btn("del","🗑️ Supprimer",function(){if(confirm("Supprimer cette fiche ?")){mine=mine.filter(function(x){return x.id!==c.id;});sv("mine",mine);render(false);}});
+ var g=document.createElement("a");g.className="btn";g.target="_blank";g.rel="noopener";g.textContent="📍 Google Maps";g.href="https://www.google.com/maps/search/?api=1&query="+c.lat+","+c.lng;r.appendChild(g);
+ if(okUrl(c.web)){var w=document.createElement("a");w.className="btn alt";w.target="_blank";w.rel="noopener";w.textContent="🌐 Site";w.href=c.web;r.appendChild(w);}
+ d.appendChild(r);return d;
 }
 function load(){
  if(map.getZoom()<9){st.textContent="🔍 Zoome un peu (ou cherche une ville) pour lancer la recherche.";return;}
@@ -118,16 +171,17 @@ function load(){
   items=j.elements.map(function(e){
    var t=e.tags||{},lat=e.lat||(e.center&&e.center.lat),lng=e.lon||(e.center&&e.center.lon);
    var addr=[t["addr:housenumber"],t["addr:street"],t["addr:city"]].filter(Boolean).join(" ");
-   return {n:t.name||"Camping sans nom",lat:lat,lng:lng,t:feats(t),addr:addr,oh:t.opening_hours,web:t.website||t["contact:website"]};
+   return {id:e.type+e.id,n:t.name||"Camping sans nom",lat:lat,lng:lng,t:feats(t),addr:addr,oh:t.opening_hours,web:t.website||t["contact:website"]||t.url};
   }).filter(function(c){return c.lat&&c.lng;});
+  render(false);
   if(!items.length)st.textContent="😕 Aucun camping trouvé ici. Essaie de dézoomer un peu.";
-  render();
  })
  .catch(function(){st.textContent="⚠️ Le service de données ne répond pas. Réessaie dans un instant.";});
 }
 document.getElementById("zone").onclick=load;
 document.getElementById("sf").onsubmit=function(ev){
  ev.preventDefault();var v=document.getElementById("q").value.trim();if(!v)return;
+ if(tab!=="zone")setTab("zone");
  st.textContent="⏳ Recherche du lieu…";
  fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=fr&q="+encodeURIComponent(v))
  .then(function(r){return r.json();})
@@ -139,6 +193,20 @@ document.getElementById("sf").onsubmit=function(ev){
  })
  .catch(function(){st.textContent="⚠️ Recherche du lieu impossible pour le moment.";});
 };
+function rd(file){return new Promise(function(ok){
+ var fr2=new FileReader();fr2.onload=function(){var im=new Image();im.onload=function(){
+  var s=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=im.width*s;cv.height=im.height*s;
+  cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);ok(cv.toDataURL("image/jpeg",.7));};im.onerror=function(){ok(null);};im.src=fr2.result;};
+ fr2.onerror=function(){ok(null);};fr2.readAsDataURL(file);});}
+document.getElementById("ff").onsubmit=function(ev){
+ ev.preventDefault();var f=ev.target,files=Array.prototype.slice.call(f.photos.files,0,3);
+ Promise.all(files.map(rd)).then(function(ph){
+  var ct=map.getCenter(),w=f.web.value.trim();
+  mine.unshift({id:"m"+Date.now(),n:f.nom.value.trim(),lat:ct.lat,lng:ct.lng,t:[],addr:f.adr.value.trim(),price:f.prix.value,note:+f.note.value,com:f.com.value.trim(),web:okUrl(w)?w:"",photos:ph.filter(Boolean)});
+  if(sv("mine",mine)){f.reset();render(false);}else mine.shift();
+ });
+};
+setTab("zone");
 </script>
 </body>
 </html>
